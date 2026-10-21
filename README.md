@@ -1,5 +1,6 @@
 # Color music (music reactive LED strip) for Arduino
 ## Schematic / Circuit / Wiring
+```
             ----------------              -------------------
             | Audio Source |              | Power Source 5V |
             ----------------              -------------------
@@ -34,3 +35,4 @@ GND --- |R100k|-|-|R100k| ---
             |-------------------|
             | LED Strip WS2812b |GND --- GND
             |-------------------|
+```
