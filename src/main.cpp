@@ -9,7 +9,8 @@
 #define LEDS_PER_CHANNEL 5
 #define ADC_MAX_VALUE 4095;
 
-#define BASS_MAX_FREQUENCY 200
+// Audio frequency bands  
+#define BASS_MAX_FREQUENCY 150
 #define MID_MAX_FREQUENCY 4000
 
 #define MIN_REFRESH_RATE_MILLISECONDS 100
