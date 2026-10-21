@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
 #include <arduinoFFT.h>
+#include <math.h>
 
 #define NEOPIXEL_DI_PIN 4
 #define AUDIO_INPUT_PIN 5
@@ -13,6 +14,11 @@
 
 #define MIN_REFRESH_RATE_MILLISECONDS 100
 #define LED_FADE_OUT_TIME_MILLISECONDS 400
+
+// Signal magnitude when no audio source is connected.
+// Samples with this magnitude (+- deviation) are considered noise and discarded.
+#define NO_SIGNAL_MEAN_MAGNITUDE 1820
+#define NO_SIGNAL_MAGNITUDE_DEVIATION 30
 
 unsigned long last_loop_duration_milliseconds = MIN_REFRESH_RATE_MILLISECONDS;
 uint8_t led_brightness_decrease_per_loop;
@@ -68,6 +74,24 @@ void loop() {
       }
       sampling_microseconds += sampling_period_us;
   }
+
+  uint16_t sample_mean = 0;
+  for (uint16_t i = 0; i < samples; i++) {
+    sample_mean += vReal[i] / samples;
+  }
+
+  uint32_t sample_variance = 0;
+  int16_t current_deviation_from_mean;
+  for (uint16_t i = 0; i < samples; i++) {
+    current_deviation_from_mean = vReal[i] - sample_mean;
+    sample_variance += current_deviation_from_mean * current_deviation_from_mean / samples;
+  }
+
+  uint16_t sample_standard_deviation = sqrt(sample_variance);
+
+  printf("sample_mean %d\n", sample_mean);
+  printf("sample_variance %lu\n", sample_variance);
+  printf("sample_standard_deviation %d\n", sample_standard_deviation);
 
   /* Fourier transform */
   FFT.complexToMagnitude();
@@ -147,6 +171,14 @@ void loop() {
   uint8_t num_bass_leds_to_light_up = bass_magnitude_normalized / magnitude_per_led;
   uint8_t num_mid_leds_to_light_up = mid_magnitude_normalized / magnitude_per_led;
   uint8_t num_treble_leds_to_light_up = treble_magnitude_normalized / magnitude_per_led;
+
+  int16_t deviation_from_no_signal_mean = sample_mean - NO_SIGNAL_MEAN_MAGNITUDE;
+  printf("deviation_from_no_signal_mean %d\n", deviation_from_no_signal_mean);
+  if (abs(deviation_from_no_signal_mean) <= NO_SIGNAL_MAGNITUDE_DEVIATION) {
+    num_bass_leds_to_light_up = 0;
+    num_mid_leds_to_light_up = 0;
+    num_treble_leds_to_light_up = 0;
+  }
 
   printf("magnitude_per_led %d\n", magnitude_per_led);
   printf("num_bass_leds_to_light_up %d\n", num_bass_leds_to_light_up);
