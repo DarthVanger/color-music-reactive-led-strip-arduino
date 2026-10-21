@@ -277,13 +277,14 @@ void loop() {
     pixels.setPixelColor(treble_leds[i], pixels.Color(0, 0, leds_current_brightness[treble_leds[i]]));
   }
 
+  // Update the physical LEDs state
+  pixels.show();
+
   // Save current loop duration
   last_loop_duration_milliseconds = millis() - last_loop_start_milliseconds;
 
   #ifdef SERIAL_LOG
   printf("last_loop_duration_milliseconds %lu\n", last_loop_duration_milliseconds);
   #endif
-
-  pixels.show();
 }
 
